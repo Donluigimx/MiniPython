@@ -23,8 +23,9 @@ namespace Token
 		NOT_EQUAL,
 		PARENTHESES_O,
     	PARENTHESES_C,
+		END_OF_FILE,
     	ERROR = 666
-	};	
+	};
 };
 
 #endif

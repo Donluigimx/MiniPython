@@ -5,8 +5,6 @@
 #include "lexic.hpp"
 #include "token.hpp"
 
-#define inFileName "input.txt"
-
 Lexic::Lexic(char* filename) {
     this->Analyze(filename);
     this->tokenPosition = 0;
@@ -22,22 +20,23 @@ void Lexic::Analyze(char* filename) {
     int inputValue;
 
     if( filename != nullptr) {
-        inFile.open(filename)
+        inFile.open(filename, std::ios_base::in);
     } else {
-        inFile.open(inFileName);
+        inFile.open(inFileName, std::ios_base::in);
     }
 
+    if (!inFile.good()) {
+        exit(0);
+    }
     std::string str((std::istreambuf_iterator<char>(inFile)),
                      std::istreambuf_iterator<char>());
 
     for(auto c: str) {
-
         inputValue = this->getValue(c);
         type = this->tokenMachine[actualState][inputValue];
-        actualState = this->tokenMachine[actualState][inputValue];
-
-        if (val != -1) {
-            if (val == Token::ERROR)
+        actualState = this->stateMachine[actualState][inputValue];
+        if (type != -1) {
+            if (type == Token::ERROR)
                 this->Error();
             lexTokens.push_back(std::pair<std::string, int>(symbol,type));
             symbol = "";
@@ -48,6 +47,19 @@ void Lexic::Analyze(char* filename) {
 
         symbol += c;
     }
+
+    type = this->tokenMachine[actualState][this->i0];
+    if (type != -1) {
+        if (type == Token::ERROR)
+            this->Error();
+        lexTokens.push_back(std::pair<std::string, int>(symbol,type));
+    }
+
+    lexTokens.push_back(std::pair<std::string, int>("$",Token::END_OF_FILE));
+
+    std::ofstream outFile(outFileName, std::ios_base::out);
+    outFile << "1";
+    outFile.close();
 }
 
 int Lexic::getValue(char c) {
@@ -57,7 +69,7 @@ int Lexic::getValue(char c) {
     if ( c >= '0' && c <= '9' )
         return this->i4;
     switch (c) {
-        case '\s':
+        case ' ':
             return this->i0;
         case '\n':
             return this->i1;
@@ -89,7 +101,16 @@ int Lexic::getValue(char c) {
             return this->i16;
         case '.':
             return this->i17;
-        default:
-            return this->inv;
+        case '\r':
+            return this->i18;
     }
+    return this->inv;
+}
+
+void Lexic::Error() {
+    std::ofstream outFile(outFileName, std::ios_base::out);
+
+    outFile << 0;
+    outFile.close();
+    exit(0);
 }

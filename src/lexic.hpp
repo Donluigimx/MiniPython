@@ -6,6 +6,9 @@
 #include <cstring>
 #include "token.hpp"
 
+#define inFileName "input.txt"
+#define outFileName "output.txt"
+
 class Lexic {
 private:
     enum {
@@ -31,6 +34,7 @@ private:
         q19,// )
         q20,// 0-9.
         q21,// 0-9.0-9
+        q22,// CR
         qer,// ERROR
         NS
     };
@@ -54,36 +58,38 @@ private:
         i15,// )
         i16,// _
         i17,// .
+        i18,// CR
         inv,// INVALID
         NI
     };
 
     int stateMachine[NS][NI] = {
-    //	  \s , \n , \t ,azAZ, 0-9,  + ,  - ,  * ,  / ,  : ,  < ,  > ,  = ,  ! ,  ( ,  )    _	.
-    //	  i0 , i1 , i2 , i3 , i4 , i5 , i6 , i7 , i8 , i9 , i10, i11, i12, i13, i14, i15, i16, i17, inv
-        { q0 , q1 , q2 , q3 , q4 , q5 , q6 , q7 , q8 , q9 , q10, q11, q14, q16, q17, q18,  q3, qer, qer},// q0 \s
-        { q0 , q1 , q2 , q3 , q4 , q5 , q6 , q7 , q8 , q9 , q10, q11, q14, q16, q17, q18,  q3, qer, qer},// q1 \n
-        { q0 , q1 , q2 , q3 , q4 , q5 , q6 , q7 , q8 , q9 , q10, q11, q14, q16, q17, q18,  q3, qer, qer},// q2 \t
-        { q0 , q1 , q2 , q3 , q3 , q5 , q6 , q7 , q8 , q9 , q10, q11, q14, q16, q17, q18,  q3, qer, qer},// q3 azAZ
-        { q0 , q1 , q2 , q3 , q4 , q5 , q6 , q7 , q8 , q9 , q10, q11, q14, q16, q17, q18,  q3, q20, qer},// q4 0-9
-        { q0 , q1 , q2 , q3 , q4 , q5 , q6 , q7 , q8 , q9 , q10, q11, q14, q16, q17, q18,  q3, qer, qer},// q5 +
-        { q0 , q1 , q2 , q3 , q4 , q5 , q6 , q7 , q8 , q9 , q10, q11, q14, q16, q17, q18,  q3, qer, qer},// q6 -
-        { q0 , q1 , q2 , q3 , q4 , q5 , q6 , q7 , q8 , q9 , q10, q11, q14, q16, q17, q18,  q3, qer, qer},// q7 *
-        { q0 , q1 , q2 , q3 , q4 , q5 , q6 , q7 , q8 , q9 , q10, q11, q14, q16, q17, q18,  q3, qer, qer},// q8 /
-        { q0 , q1 , q2 , q3 , q4 , q5 , q6 , q7 , q8 , q9 , q10, q11, q14, q16, q17, q18,  q3, qer, qer},// q9 :
-        { q0 , q1 , q2 , q3 , q4 , q5 , q6 , q7 , q8 , q9 , q10, q11, q12, q16, q17, q18,  q3, qer, qer},//q10 <
-        { q0 , q1 , q2 , q3 , q4 , q5 , q6 , q7 , q8 , q9 , q10, q11, q13, q16, q17, q18,  q3, qer, qer},//q11 >
-        { q0 , q1 , q2 , q3 , q4 , q5 , q6 , q7 , q8 , q9 , q10, q11, q14, q16, q17, q18,  q3, qer, qer},//q12 <=
-        { q0 , q1 , q2 , q3 , q4 , q5 , q6 , q7 , q8 , q9 , q10, q11, q14, q16, q17, q18,  q3, qer, qer},//q13 >=
-        { q0 , q1 , q2 , q3 , q4 , q5 , q6 , q7 , q8 , q9 , q10, q11, q15, q16, q17, q18,  q3, qer, qer},//q14 =
-        { q0 , q1 , q2 , q3 , q4 , q5 , q6 , q7 , q8 , q9 , q10, q11, q14, q16, q17, q18,  q3, qer, qer},//q15 ==
-        { qer, qer, qer, qer, qer, qer, qer, qer, qer, qer, qer, qer, q17, qer, qer, qer, qer, qer, qer},//q16 !
-        { q0 , q1 , q2 , q3 , q4 , q5 , q6 , q7 , q8 , q9 , q10, q11, q14, q16, q17, q18,  q3, qer, qer},//q17 !=
-        { q0 , q1 , q2 , q3 , q4 , q5 , q6 , q7 , q8 , q9 , q10, q11, q14, q16, q17, q18,  q3, qer, qer},//q18 (
-        { q0 , q1 , q2 , q3 , q4 , q5 , q6 , q7 , q8 , q9 , q10, q11, q14, q16, q17, q18,  q3, qer, qer},//q19 )
-        { qer, qer, qer, qer, q21, qer, qer, qer, qer, qer, qer, qer, qer, qer, qer, qer, qer, qer, qer},//q20 0-9.
-        { q0 , q1 , q2 , q3 , q21, q5 , q6 , q7 , q8 , q9 , q10, q11, q14, q16, q17, q18,  q3, qer, qer},//q21 0-9.0-9
-        { qer, qer, qer, qer, qer, qer, qer, qer, qer, qer, qer, qer, qer, qer, qer, qer, qer, qer, qer} //qer ERROR
+    //	  \s , \n , \t ,azAZ, 0-9,  + ,  - ,  * ,  / ,  : ,  < ,  > ,  = ,  ! ,  ( ,  )    _	.    CR
+    //	  i0 , i1 , i2 , i3 , i4 , i5 , i6 , i7 , i8 , i9 , i10, i11, i12, i13, i14, i15, i16, i17, i18, inv
+        { q0 , q1 , q2 , q3 , q4 , q5 , q6 , q7 , q8 , q9 , q10, q11, q14, q16, q17, q18,  q3, qer, q22, qer},// q0 \s
+        { q0 , q1 , q2 , q3 , q4 , q5 , q6 , q7 , q8 , q9 , q10, q11, q14, q16, q17, q18,  q3, qer, q22, qer},// q1 \n
+        { q0 , q1 , q2 , q3 , q4 , q5 , q6 , q7 , q8 , q9 , q10, q11, q14, q16, q17, q18,  q3, qer, q22, qer},// q2 \t
+        { q0 , q1 , q2 , q3 , q3 , q5 , q6 , q7 , q8 , q9 , q10, q11, q14, q16, q17, q18,  q3, qer, q22, qer},// q3 azAZ
+        { q0 , q1 , q2 , q3 , q4 , q5 , q6 , q7 , q8 , q9 , q10, q11, q14, q16, q17, q18,  q3, q20, q22, qer},// q4 0-9
+        { q0 , q1 , q2 , q3 , q4 , q5 , q6 , q7 , q8 , q9 , q10, q11, q14, q16, q17, q18,  q3, qer, q22, qer},// q5 +
+        { q0 , q1 , q2 , q3 , q4 , q5 , q6 , q7 , q8 , q9 , q10, q11, q14, q16, q17, q18,  q3, qer, q22, qer},// q6 -
+        { q0 , q1 , q2 , q3 , q4 , q5 , q6 , q7 , q8 , q9 , q10, q11, q14, q16, q17, q18,  q3, qer, q22, qer},// q7 *
+        { q0 , q1 , q2 , q3 , q4 , q5 , q6 , q7 , q8 , q9 , q10, q11, q14, q16, q17, q18,  q3, qer, q22, qer},// q8 /
+        { q0 , q1 , q2 , q3 , q4 , q5 , q6 , q7 , q8 , q9 , q10, q11, q14, q16, q17, q18,  q3, qer, q22, qer},// q9 :
+        { q0 , q1 , q2 , q3 , q4 , q5 , q6 , q7 , q8 , q9 , q10, q11, q12, q16, q17, q18,  q3, qer, q22, qer},//q10 <
+        { q0 , q1 , q2 , q3 , q4 , q5 , q6 , q7 , q8 , q9 , q10, q11, q13, q16, q17, q18,  q3, qer, q22, qer},//q11 >
+        { q0 , q1 , q2 , q3 , q4 , q5 , q6 , q7 , q8 , q9 , q10, q11, q14, q16, q17, q18,  q3, qer, q22, qer},//q12 <=
+        { q0 , q1 , q2 , q3 , q4 , q5 , q6 , q7 , q8 , q9 , q10, q11, q14, q16, q17, q18,  q3, qer, q22, qer},//q13 >=
+        { q0 , q1 , q2 , q3 , q4 , q5 , q6 , q7 , q8 , q9 , q10, q11, q15, q16, q17, q18,  q3, qer, q22, qer},//q14 =
+        { q0 , q1 , q2 , q3 , q4 , q5 , q6 , q7 , q8 , q9 , q10, q11, q14, q16, q17, q18,  q3, qer, q22, qer},//q15 ==
+        { qer, qer, qer, qer, qer, qer, qer, qer, qer, qer, qer, qer, q17, qer, qer, qer, qer, qer, qer, qer},//q16 !
+        { q0 , q1 , q2 , q3 , q4 , q5 , q6 , q7 , q8 , q9 , q10, q11, q14, q16, q17, q18,  q3, qer, q22, qer},//q17 !=
+        { q0 , q1 , q2 , q3 , q4 , q5 , q6 , q7 , q8 , q9 , q10, q11, q14, q16, q17, q18,  q3, qer, q22, qer},//q18 (
+        { q0 , q1 , q2 , q3 , q4 , q5 , q6 , q7 , q8 , q9 , q10, q11, q14, q16, q17, q18,  q3, qer, q22, qer},//q19 )
+        { qer, qer, qer, qer, q21, qer, qer, qer, qer, qer, qer, qer, qer, qer, qer, qer, qer, qer, qer, qer},//q20 0-9.
+        { q0 , q1 , q2 , q3 , q21, q5 , q6 , q7 , q8 , q9 , q10, q11, q14, q16, q17, q18,  q3, qer, q22, qer},//q21 0-9.0-9
+        { qer, q1 , qer, qer, qer, qer, qer, qer, qer, qer, qer, qer, qer, qer, qer, qer, qer, qer, qer, qer},//q22 CR
+        { qer, qer, qer, qer, qer, qer, qer, qer, qer, qer, qer, qer, qer, qer, qer, qer, qer, qer, qer, qer} //qer ERROR
     };
 
     int tokenMachine[NS][NI] = {
@@ -111,12 +117,13 @@ private:
     	{ 18 , 18 , 18 , 18 , 18 , 18 , 18 , 18 , 18 , 18 , 18 , 18 , 18 , 18 , 18 , 18 , 18 , 18 , 18 },//q19 )
     	{ -1 , -1 , -1 , -1 , -1 , -1 , -1 , -1 , -1 , -1 , -1 , -1 , -1 , -1 , -1 , -1 , -1 , -1 , -1 },//q20 0-9.
     	{  4 ,  4 ,  4 ,  4 ,  4 ,  4 ,  4 ,  4 ,  4 ,  4 ,  4 ,  4 ,  4 ,  4 ,  4 ,  4 ,  4 ,  4 ,  4 },//q21 0-9.0-9
+        { -1 , -1 , -1 , -1 , -1 , -1 , -1 , -1 , -1 , -1 , -1 , -1 , -1 , -1 , -1 , -1 , -1 , -1 , -1 },//q22 CR
     	{ 666, 666, 666, 666, 666, 666, 666, 666, 666, 666, 666, 666, 666, 666, 666, 666, 666, 666, 666},//qer ERROR
     };
 
-    std::std::vector < std::pair < std::string, int > > lexTokens;
+    std::vector < std::pair < std::string, int > > lexTokens;
     int tokenPosition;
-    
+
     void Analyze(char *);
     int getValue(char c);
     void Error();
@@ -126,7 +133,7 @@ public:
     std::string symbol;
 
     Lexic (char *);
-    virtual ~Lexic ();
+    virtual ~Lexic () {};
 
 };
 
