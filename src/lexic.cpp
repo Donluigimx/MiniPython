@@ -6,10 +6,19 @@
 #include "token.hpp"
 
 Lexic::Lexic(char* filename) {
+    this->init();
     this->Analyze(filename);
     this->tokenPosition = 0;
     this->symbol = this->lexTokens[this->tokenPosition].first;
     this->type = this->lexTokens[this->tokenPosition].second;
+}
+
+void Lexic::init() {
+    reserved.insert(std::pair<std::string,int>("if",Token::IF));
+    reserved.insert(std::pair<std::string,int>("elif",Token::ELIF));
+    reserved.insert(std::pair<std::string,int>("else",Token::ELSE));
+    reserved.insert(std::pair<std::string,int>("while",Token::WHILE));
+    reserved.insert(std::pair<std::string,int>("print",Token::PRINT));
 }
 
 void Lexic::Analyze(char* filename) {
@@ -18,6 +27,8 @@ void Lexic::Analyze(char* filename) {
     int type;
     int actualState = 0;
     int inputValue;
+    int maxIndent;
+    int contIndent;
 
     if( filename != nullptr) {
         inFile.open(filename, std::ios_base::in);
@@ -26,16 +37,40 @@ void Lexic::Analyze(char* filename) {
     }
 
     if (!inFile.good()) {
-        exit(0);
+        exit(1);
     }
     std::string str((std::istreambuf_iterator<char>(inFile)),
                      std::istreambuf_iterator<char>());
 
+    maxIndent = 0;
+    contIndent = 0;
     for(auto c: str) {
         inputValue = this->getValue(c);
         type = this->tokenMachine[actualState][inputValue];
         actualState = this->stateMachine[actualState][inputValue];
+
+        if( c == '\t')
+            contIndent++;
+
         if (type != -1) {
+            if (type == Token::TAB) {
+                if( contIndent == (maxIndent + 1) )
+                    type = Token::INDENT;
+                else if ( contIndent == (maxIndent - 1) ) 
+                    type = Token::DEDENT;
+                else if ( contIndent == maxIndent ) {
+                    contIndent = 0;
+                    symbol = "";
+                    continue;
+                } else 
+                    Error();
+                maxIndent = contIndent;
+                contIndent = 0;
+            } else if (type == Token::IDENTIFIER) {
+                if(reserved.find(symbol) != reserved.end()) {
+                   type = reserved.find(symbol)->second;
+                }
+            }
             if (type == Token::ERROR)
                 this->Error();
             lexTokens.push_back(std::pair<std::string, int>(symbol,type));

@@ -23,6 +23,13 @@ namespace Token
 		NOT_EQUAL,
 		PARENTHESES_O,
     	PARENTHESES_C,
+    	INDENT,
+    	DEDENT,
+    	IF,
+    	ELIF,
+    	ELSE,
+    	WHILE,
+    	PRINT,
 		END_OF_FILE,
     	ERROR = 666
 	};

@@ -4,6 +4,7 @@
 #include <iostream>
 #include <vector>
 #include <cstring>
+#include <map>
 #include "token.hpp"
 
 #define inFileName "input.txt"
@@ -97,7 +98,7 @@ private:
     //	  i0 , i1 , i2 , i3 , i4 , i5 , i6 , i7 , i8 , i9 , i10, i11, i12, i13, i14, i15, i16, i17, inv
     	{ -1 , -1 , -1 , -1 , -1 , -1 , -1 , -1 , -1 , -1 , -1 , -1 , -1 , -1 , -1 , -1 , -1 , -1 , -1 },// q0 \s
     	{  0 ,  0 ,  0 ,  0 ,  0 ,  0 ,  0 ,  0 ,  0 ,  0 ,  0 ,  0 ,  0 ,  0 ,  0 ,  0 ,  0 ,  0 ,  0 },// q1 \n
-    	{  1 ,  1 ,  1 ,  1 ,  1 ,  1 ,  1 ,  1 ,  1 ,  1 ,  1 ,  1 ,  1 ,  1 ,  1 ,  1 ,  1 ,  1 ,  1 },// q2 \t
+    	{  1 ,  1 , -1 ,  1 ,  1 ,  1 ,  1 ,  1 ,  1 ,  1 ,  1 ,  1 ,  1 ,  1 ,  1 ,  1 ,  1 ,  1 ,  1 },// q2 \t
     	{  2 ,  2 ,  2 , -1 , -1 ,  2 ,  2 ,  2 ,  2 ,  2 ,  2 ,  2 ,  2 ,  2 ,  2 ,  2 , -1 ,  2 ,  2 },// q3 azAZ
     	{  3 ,  3 ,  3 ,  3 , -1 ,  3 ,  3 ,  3 ,  3 ,  3 ,  3 ,  3 ,  3 ,  3 ,  3 ,  3 ,  3 , -1 ,  3 },// q4 0-9
     	{  5 ,  5 ,  5 ,  5 ,  5 ,  5 ,  5 ,  5 ,  5 ,  5 ,  5 ,  5 ,  5 ,  5 ,  5 ,  5 ,  5 ,  5 ,  5 },// q5 +
@@ -122,10 +123,12 @@ private:
     };
 
     std::vector < std::pair < std::string, int > > lexTokens;
+    std::map< std::string, int > reserved;
     int tokenPosition;
 
     void Analyze(char *);
     int getValue(char c);
+    void init();
     void Error();
 
 public:
