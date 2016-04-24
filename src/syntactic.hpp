@@ -7,11 +7,13 @@
 
 class Syntactic {
 public:
-	Syntactic();
+	Syntactic(char*);
 	virtual ~Syntactic() { };
 
 private:
 	Lexic *lexic;
+
+	void Translation_Unit();
 
 	void Single_Unit();
 	void Stmt();
@@ -32,12 +34,17 @@ private:
 	void Unary();
 	void F();
 	void If_Stmt();
+	void _If_Stmt();
 	void While_Stmt();
 	void Suite();
 	void _Suite();
+	void Comp_Stmt();
+	void List_Comp();
 
 	void Check(std::string);
 	void Check(int);
+
+	void Error();
 };
 
 #endif

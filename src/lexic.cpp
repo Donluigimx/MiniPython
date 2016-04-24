@@ -24,6 +24,7 @@ void Lexic::init() {
 void Lexic::Analyze(char* filename) {
     std::ifstream inFile;
     std::string symbol = "";
+	bool isnewline;
     int type;
     int actualState = 0;
     int inputValue;
@@ -35,7 +36,7 @@ void Lexic::Analyze(char* filename) {
     } else {
         inFile.open(inFileName, std::ios_base::in);
     }
-
+/* message */
     if (!inFile.good()) {
         exit(1);
     }
@@ -44,33 +45,47 @@ void Lexic::Analyze(char* filename) {
 
     maxIndent = 0;
     contIndent = 0;
+	isnewline = false;
     for(auto c: str) {
         inputValue = this->getValue(c);
         type = this->tokenMachine[actualState][inputValue];
         actualState = this->stateMachine[actualState][inputValue];
-
-        if( c == '\t')
+        if( c == '\t') {
             contIndent++;
-
+        }
         if (type != -1) {
-            if (type == Token::TAB) {
-                if( contIndent == (maxIndent + 1) )
-                    type = Token::INDENT;
-                else if ( contIndent == (maxIndent - 1) ) 
-                    type = Token::DEDENT;
+            if (isnewline) {
+				if(type == Token::NEWLINE) {
+					symbol = c;
+					continue;
+				}
+				else if( contIndent > maxIndent ) {
+					for(int i = maxIndent; i < contIndent; i++)
+						lexTokens.push_back(std::pair<std::string, int>("INDENT",Token::INDENT));
+				}
+				else if ( contIndent < maxIndent) {
+					for(int i = contIndent; i < maxIndent; i++)
+						lexTokens.push_back(std::pair<std::string, int>("DEDENT",Token::DEDENT));
+				}
                 else if ( contIndent == maxIndent ) {
-                    contIndent = 0;
-                    symbol = "";
-                    continue;
-                } else 
-                    Error();
+					//
+                }
                 maxIndent = contIndent;
                 contIndent = 0;
-            } else if (type == Token::IDENTIFIER) {
+				isnewline = false;
+				if (type == Token::TAB) {
+					symbol = c;
+					continue;
+				}
+            }
+			if (type == Token::IDENTIFIER) {
                 if(reserved.find(symbol) != reserved.end()) {
                    type = reserved.find(symbol)->second;
                 }
             }
+			if (type == Token::NEWLINE) {
+				isnewline = true;
+			}
             if (type == Token::ERROR)
                 this->Error();
             lexTokens.push_back(std::pair<std::string, int>(symbol,type));
@@ -82,19 +97,35 @@ void Lexic::Analyze(char* filename) {
 
         symbol += c;
     }
-
     type = this->tokenMachine[actualState][this->i0];
     if (type != -1) {
-        if (type == Token::ERROR)
-            this->Error();
-        lexTokens.push_back(std::pair<std::string, int>(symbol,type));
+		if (type == Token::IDENTIFIER) {
+			if(reserved.find(symbol) != reserved.end()) {
+			   type = reserved.find(symbol)->second;
+			}
+		}
+		if (type == Token::NEWLINE) {
+			isnewline = true;
+		}
+		if (type == Token::ERROR)
+			this->Error();
+		lexTokens.push_back(std::pair<std::string, int>(symbol,type));
+		if(isnewline) {
+			if( contIndent > maxIndent )
+				for(int i = maxIndent; i < contIndent; i++)
+					lexTokens.push_back(std::pair<std::string, int>("INDENT",Token::INDENT));
+			else if ( contIndent < maxIndent) {
+				for(int i = contIndent; i < maxIndent; i++)
+					lexTokens.push_back(std::pair<std::string, int>("DEDENT",Token::DEDENT));
+			}
+			else if ( contIndent == maxIndent ) {
+				//
+			} else
+				Error();
+		}
     }
 
     lexTokens.push_back(std::pair<std::string, int>("$",Token::END_OF_FILE));
-
-    std::ofstream outFile(outFileName, std::ios_base::out);
-    outFile << "1";
-    outFile.close();
 }
 
 int Lexic::getValue(char c) {

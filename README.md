@@ -1,8 +1,8 @@
 ##Grammar##
 
-SINGLE_INPUT -> newline SINGLE_INPUT
-			   |SIMPLE_STMT SINGLE_INPUT
-			   |€
+SINGLE_INPUT -> newline
+			   |SIMPLE_STMT
+			   |COMPOUND_STMT
 
 STMT -> SIMPLE_STMT
 	   |COMPOUND_STMT
@@ -12,9 +12,7 @@ SIMPLE_STMT -> SMALL_STMT newline
 SMALL_STMT -> EXPR_STMT
 			 |PRINT_STMT
 
-PRINT_STMT-> print(expr_stmt)
-
-DEFVAR_STMT -> id = EXPR_STMT
+PRINT_STMT-> print(EXPR)
 
 EXPR_STMT -> EXPR _EXPR_STMT
 
@@ -58,9 +56,13 @@ F  -> id
 COMPOUND_STMT -> IF_STMT
 				|WHILE_STMT
 
-IF_STMT -> if EXPR_STMT : SUITE
+IF_STMT -> if COMP_STMT : SUITE _IF_STMT
 
-WHILE_STMT -> while EXPR_STMT : SUITE
+_IF_STMT -> elif COMP_STMT : SUITE _IF_STMT
+		   |else : SUITE
+		   |€
+
+WHILE_STMT -> while COMP_STMT : SUITE
 
 SUITE -> SIMPLE_STMT
 		|newline indent STMT _SUITE dedent

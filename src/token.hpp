@@ -1,6 +1,10 @@
 #ifndef TOKEN
 #define TOKEN
 
+
+#define inFileName "entrada.txt"
+#define outFileName "salida.txt"
+
 namespace Token
 {
 	enum {
