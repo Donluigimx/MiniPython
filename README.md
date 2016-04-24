@@ -2,7 +2,6 @@
 
 SINGLE_INPUT -> newline SINGLE_INPUT
 			   |SIMPLE_STMT SINGLE_INPUT
-			   |COMPOUND_STMT SINGLE_INPUT
 			   |€
 
 STMT -> SIMPLE_STMT
@@ -10,15 +9,19 @@ STMT -> SIMPLE_STMT
 
 SIMPLE_STMT -> SMALL_STMT newline
 
-SMALL_STMT -> DEFVAR_STMT
-			 |EXPR_STMT
+SMALL_STMT -> EXPR_STMT
 			 |PRINT_STMT
 
 PRINT_STMT-> print(expr_stmt)
 
 DEFVAR_STMT -> id = EXPR_STMT
 
-EXPR_STMT -> COMP EQ
+EXPR_STMT -> EXPR _EXPR_STMT
+
+_EXPR_STMT -> = EXPR_STMT
+			 |€
+
+EXPR -> COMP EQ
 
 EQ -> == COMP EQ
 	 |!= COMP EQ
@@ -60,7 +63,11 @@ IF_STMT -> if EXPR_STMT : SUITE
 WHILE_STMT -> while EXPR_STMT : SUITE
 
 SUITE -> SIMPLE_STMT
-		|newline indent STMT _SUITE DEDENT
+		|newline indent STMT _SUITE dedent
 
 _SUITE -> STMT _SUITE
 		 |€
+
+COMP_STMT -> E LIST_COMP EXPR
+
+LIST_COMP -> < | > | <= | >= | == | !=

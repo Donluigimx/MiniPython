@@ -149,3 +149,9 @@ void Lexic::Error() {
     outFile.close();
     exit(0);
 }
+
+void Lexic::Next() {
+    this->tokenPosition++;
+    this->symbol = this->lexTokens[this->tokenPosition].first;
+    this->type = this->lexTokens[this->tokenPosition].second;
+}

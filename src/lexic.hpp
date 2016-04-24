@@ -134,6 +134,7 @@ private:
 public:
     int type;
     std::string symbol;
+    void Next();
 
     Lexic (char *);
     virtual ~Lexic () {};
