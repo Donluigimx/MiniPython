@@ -109,20 +109,22 @@ void Lexic::Analyze(char* filename) {
 		}
 		if (type == Token::ERROR)
 			this->Error();
-		lexTokens.push_back(std::pair<std::string, int>(symbol,type));
 		if(isnewline) {
-			if( contIndent > maxIndent )
-				for(int i = maxIndent; i < contIndent; i++)
+			if( contIndent > maxIndent ) {
+				for(int i = maxIndent; i < contIndent; i++) {
 					lexTokens.push_back(std::pair<std::string, int>("INDENT",Token::INDENT));
+				}
+			}
 			else if ( contIndent < maxIndent) {
 				for(int i = contIndent; i < maxIndent; i++)
-					lexTokens.push_back(std::pair<std::string, int>("DEDENT",Token::DEDENT));
+				lexTokens.push_back(std::pair<std::string, int>("DEDENT",Token::DEDENT));
 			}
 			else if ( contIndent == maxIndent ) {
 				//
 			} else
-				Error();
+			Error();
 		}
+		lexTokens.push_back(std::pair<std::string, int>(symbol,type));
     }
 
     lexTokens.push_back(std::pair<std::string, int>("$",Token::END_OF_FILE));

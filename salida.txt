@@ -1,0 +1,126 @@
+<PROGRAMA>
+<ASIGNACION>
+<ID>g2z</ID>
+<ENTERO>29247</ENTERO>
+</ASIGNACION>
+<ASIGNACION>
+<ID>yC2</ID>
+<SUMA value="-">
+<SIGNO value="-">
+<SIGNO value="+">
+<ID>EC454</ID>
+</SIGNO>
+</SIGNO>
+<SIGNO value="+">
+<REAL>595.4</REAL>
+</SIGNO>
+</SUMA>
+</ASIGNACION>
+<IMPRIME>
+<EXPRESION>
+<MULT value="/">
+<SUMA value="-">
+<MULT value="*">
+<ENTERO>2284</ENTERO>
+<ID>b7</ID>
+</MULT>
+<ID>zk0e</ID>
+</SUMA>
+<ID>U4</ID>
+</MULT>
+</EXPRESION>
+</IMPRIME>
+<MIENTRAS>
+<EXPRESION value="&lt;=">
+<MULT value="*">
+<ID>Y</ID>
+<ENTERO>7848</ENTERO>
+</MULT>
+<ENTERO>89514</ENTERO>
+</EXPRESION>
+<BLOQUE>
+<SI>
+<EXPRESION value="==">
+<MULT value="*">
+<ID>Ye8Ng</ID>
+<SUMA value="+">
+<REAL>91818.9</REAL>
+<ID>A65P1</ID>
+</SUMA>
+</MULT>
+<ID>SN</ID>
+</EXPRESION>
+<BLOQUE>
+<SI>
+<EXPRESION value="&gt;=">
+<SIGNO value="+">
+<SIGNO value="+">
+<REAL>7069.26</REAL>
+</SIGNO>
+</SIGNO>
+<MULT value="*">
+<ENTERO>9</ENTERO>
+<SUMA value="-">
+<ID>N2ZX</ID>
+<REAL>90629.2</REAL>
+</SUMA>
+</MULT>
+</EXPRESION>
+<BLOQUE>
+<IMPRIME>
+<EXPRESION>
+<REAL>335.5</REAL>
+</EXPRESION>
+</IMPRIME>
+<IMPRIME>
+<EXPRESION>
+<MULT value="*">
+<SIGNO value="+">
+<MULT value="*">
+<ENTERO>75233</ENTERO>
+<SIGNO value="-">
+<ID>x</ID>
+</SIGNO>
+</MULT>
+</SIGNO>
+<SIGNO value="+">
+<ENTERO>4</ENTERO>
+</SIGNO>
+</MULT>
+</EXPRESION>
+</IMPRIME>
+</BLOQUE>
+</SI>
+</BLOQUE>
+<OTRO>
+<IMPRIME>
+<EXPRESION>
+<SUMA value="-">
+<MULT value="/">
+<MULT value="*">
+<MULT value="/">
+<REAL>7338.4</REAL>
+<REAL>85502.05</REAL>
+</MULT>
+<ENTERO>5</ENTERO>
+</MULT>
+<SIGNO value="+">
+<MULT value="*">
+<ENTERO>7034</ENTERO>
+<REAL>36813.4</REAL>
+</MULT>
+</SIGNO>
+</MULT>
+<ENTERO>642</ENTERO>
+</SUMA>
+</EXPRESION>
+</IMPRIME>
+</OTRO>
+</SI>
+<ASIGNACION>
+<ID>HZ</ID>
+<ENTERO>561</ENTERO>
+</ASIGNACION>
+</BLOQUE>
+</MIENTRAS>
+</PROGRAMA>

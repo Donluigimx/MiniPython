@@ -6,158 +6,341 @@
 
 Syntactic::Syntactic(char* filename) {
 	lexic = new Lexic(filename);
-	Translation_Unit();
+	tree = Translation_Unit();
 }
 
-void Syntactic::Translation_Unit() {
-	while (lexic->type != Token::END_OF_FILE)
-		Single_Unit();
+Node* Syntactic::Translation_Unit() {
+	Program* program = new Program();
+	Node* node = nullptr;
+	while (lexic->type != Token::END_OF_FILE) {
+		node = Single_Unit();
+		if(node != nullptr){
+			program->nodes.push_back(node);
+		}
+
+	}
+	return program;
 }
-void Syntactic::Single_Unit() {
+
+Node* Syntactic::Single_Unit() {
+	Node* node = nullptr;
 	if (lexic->type == Token::NEWLINE) {
 		lexic->Next();
 	} else if (lexic->type == Token::IF || lexic->type == Token::WHILE) {
-		Compound_Stmt();
+		node = Compound_Stmt();
 		//Check(Token::NEWLINE); Idk if Franco knows that
 	} else {
-		Simple_Stmt();
+		node = Simple_Stmt();
 	}
+	return node;
 }
 
-void Syntactic::Simple_Stmt() {
-	Small_Stmt();
+Node* Syntactic::Simple_Stmt() {
+	Node* node = nullptr;
+	node = Small_Stmt();
 	Check(Token::NEWLINE);
+	return node;
 }
 
-void Syntactic::Small_Stmt() {
+Node* Syntactic::Small_Stmt() {
+	Node* node = nullptr;
 	if (lexic->type == Token::PRINT) {
-		Print_Stmt();
+		node = Print_Stmt();
 	} else {
-		Expr_Stmt();
+		node = Expr_Stmt();
 	}
+	return node;
 }
 
-void Syntactic::Print_Stmt() {
+Print* Syntactic::Print_Stmt() {
+	Print* pr = new Print();
 	Check(Token::PRINT);
 	Check("(");
 	if( lexic->type != Token::PARENTHESES_C)
-		Expr();
+		pr->expr = Expr();
 	Check(")");
+	return pr;
 }
 
-void Syntactic::Expr_Stmt() {
-	Expr();
-	_Expr_Stmt();
-}
-
-void Syntactic::_Expr_Stmt() {
-	if( lexic->type == Token::EQUAL ) {
-		lexic->Next();
-		Expr_Stmt();
+Expression* Syntactic::Expr_Stmt() {
+	Expression* ope = nullptr;
+    Expression* oper = nullptr;
+	ope = Expr();
+	oper = _Expr_Stmt();
+	if(oper != nullptr) {
+		if (dynamic_cast<ID*>(ope) == NULL)
+			Error();
+		oper->l = ope;
+	} else {
+		oper = ope;
 	}
+
+	return oper;
 }
 
-void Syntactic::Expr() {
-	Comp();
-	Eq();
+Expression* Syntactic::_Expr_Stmt() {
+	Expression* expr = nullptr;
+	std::string aux;
+	int auxt;
+	if( lexic->type == Token::EQUAL ) {
+		aux = lexic->symbol;
+		auxt = lexic->type;
+		lexic->Next();
+		expr = new Assign(Expr_Stmt(),auxt,aux);
+	}
+
+	return expr;
 }
 
-void Syntactic::Eq() {
+Expression* Syntactic::Expr() {
+	Expression* ope = nullptr;
+    Expression* oper = nullptr;
+
+	ope = comp();
+	oper = Eq();
+
+	if(oper != nullptr)
+		oper->l = ope;
+	else
+		oper = ope;
+
+	return oper;
+}
+
+Expression* Syntactic::Eq() {
+	Expression* ope = nullptr;
+    Expression* aux = nullptr;
+    Expression* aux2 = nullptr;
+
+	std::string auxs;
+	int auxt;
+
 	if (lexic->type == Token::DOUBLE_EQUAL ||
 		lexic->type == Token::NOT_EQUAL) {
+			auxs = lexic->symbol;
+			auxt = lexic->type;
 			lexic->Next();
-			Comp();
-			Eq();
+			aux = comp();
+			aux2 = Eq();
+			if(aux2 != nullptr)
+				aux2->l = aux;
+			else
+				aux2 = aux;
+			ope = new Comp(aux2,auxt,auxs);
 	 }
+
+	 return ope;
 }
 
-void Syntactic::Comp() {
-	E();
-	_Comp();
+Expression* Syntactic::comp() {
+	Expression* ope = nullptr;
+    Expression* oper = nullptr;
+
+	ope = E();
+	oper = _Comp();
+
+	if(oper != nullptr)
+		oper->l = ope;
+	else
+		oper = ope;
+
+	return oper;
 }
 
-void Syntactic::_Comp() {
+Expression* Syntactic::_Comp() {
+	Expression* ope = nullptr;
+    Expression* aux = nullptr;
+    Expression* aux2 = nullptr;
+
+	std::string auxs;
+	int auxt;
+
 	if (lexic->type == Token::LESS ||
 		lexic->type == Token::LESS_OR_EQUAL ||
 	 	lexic->type == Token::GREATER ||
 	 	lexic->type == Token::GREATER_OR_EQUAL) {
+			auxs = lexic->symbol;
+			auxt = lexic->type;
 			lexic->Next();
-			E();
-			_Comp();
+			aux = E();
+			aux2 = _Comp();
+			if(aux2 != nullptr)
+				aux2->l = aux;
+			else
+				aux2 = aux;
+			ope = new Comp(aux2,auxt,auxs);
 		}
+
+	return ope;
 }
 
-void Syntactic::E() {
-	T();
-	_E();
+Expression* Syntactic::E() {
+	Expression* ope = nullptr;
+    Expression* oper = nullptr;
+
+	ope = T();
+	oper = _E();
+
+	if(oper != nullptr)
+		oper->l = ope;
+	else
+		oper = ope;
+
+	return oper;
 }
 
-void Syntactic::_E() {
+Expression* Syntactic::_E() {
+	Expression* ope = nullptr;
+    Expression* aux = nullptr;
+    Expression* aux2 = nullptr;
+
+	std::string auxs;
+	int auxt;
+
 	if (lexic->type == Token::ADD ||
 		lexic->type == Token::SUB) {
+			auxs = lexic->symbol;
+			auxt = lexic->type;
 			lexic->Next();
-			T();
-			_E();
+			aux = T();
+			aux2 = _E();
+			if(aux2 != nullptr)
+				aux2->l = aux;
+			else
+				aux2 = aux;
+			ope = new Add(aux2,auxt,auxs);
 		}
+
+	return ope;
 }
 
-void Syntactic::T() {
-	Unary();
-	F();
-	_T();
+Expression* Syntactic::T() {
+	Expression* ope = nullptr;
+    Expression* oper = nullptr;
+
+	ope = F();
+	oper = _T();
+
+	if(oper != nullptr)
+		oper->l = ope;
+	else
+		oper = ope;
+
+	return oper;
 }
 
-void Syntactic::_T() {
+Expression* Syntactic::_T() {
+	Expression* ope = nullptr;
+    Expression* aux = nullptr;
+	Expression* aux2 = nullptr;
+
+	std::string auxs;
+	int auxt;
+
 	if (lexic->type == Token::MUL ||
 		lexic->type == Token::DIV) {
+			auxs = lexic->symbol;
+			auxt = lexic->type;
 			lexic->Next();
-			Unary();
-			F();
-			_T();
+			aux = F();
+			aux2 = _T();
+			if(aux2 != nullptr)
+				aux2->l = aux;
+			else
+				aux2 = aux;
+			ope = new Mul(aux2,auxt,auxs);
 		}
+
+	return ope;
 }
 
-void Syntactic::Unary() {
+Expression* Syntactic::unary() {
+	Expression* ope = nullptr;
+    Expression* aux = nullptr;
+
+	std::string auxs;
+	int auxt;
+
 	if (lexic->type == Token::ADD ||
 		lexic->type == Token::SUB) {
+			auxs = lexic->symbol;
+			auxt = lexic->type;
 			lexic->Next();
-			Unary();
+			aux = unary();
+			ope = new Unary(aux,auxt,auxs);
 		}
+
+	return ope;
 }
 
-void Syntactic::F() {
-	if(lexic->type == Token::IDENTIFIER)
+Expression* Syntactic::F() {
+	Expression* value = nullptr;
+	Expression* una = nullptr;
+	Expression* aux = nullptr;
+
+	una = unary();
+	if(lexic->type == Token::IDENTIFIER) {
+		value = new ID(lexic->type,lexic->symbol);
 		lexic->Next();
-	else if(lexic->type == Token::INTEGER || lexic->type == Token::FLOAT)
+	}
+	else if(lexic->type == Token::INTEGER || lexic->type == Token::FLOAT) {
+		value = new Value(lexic->type,lexic->symbol);
 		lexic->Next();
+	}
 	else if(lexic->type == Token::PARENTHESES_O) {
 		lexic->Next();
-		Expr();
+		value = Expr();
 		Check(")");
-	} else
-		Error();
-}
-
-void Syntactic::Compound_Stmt() {
-	if(lexic->type == Token::IF) {
-		If_Stmt();
 	} else {
-		While_Stmt();
+		Error();
 	}
+
+	if(una != nullptr) {
+		aux = una;
+		while(aux->r != nullptr)
+			aux = aux->r;
+		aux->r = value;
+		value = una;
+	}
+	return value;
 }
 
-void Syntactic::If_Stmt() {
+Node* Syntactic::Compound_Stmt() {
+	Node* node = nullptr;
+	if(lexic->type == Token::IF) {
+		node = If_Stmt();
+	} else {
+		node = While_Stmt();
+	}
+	return node;
+}
+
+If* Syntactic::If_Stmt() {
+	If* node = nullptr;
+	Expression* expr = nullptr;
+	Suite* suit = nullptr;
+	Else* els = nullptr;
+	std::string auxs = lexic->symbol;
+	int auxt = lexic->type;
+
 	Check(Token::IF);
-	Comp_Stmt();
+	expr = Comp_Stmt();
 	Check(":");
-	Suite();
+	suit = suite();
 	while(lexic->type == Token::NEWLINE)
 		lexic->Next();
-	_If_Stmt();
+	els = _If_Stmt();
+	node = new If(auxt,auxs,expr,suit,els);
+
+	return node;
 }
 
-void Syntactic::_If_Stmt() {
-	if(lexic->type == Token::ELIF) {
+Else* Syntactic::_If_Stmt() {
+	Else* node = nullptr;
+	Suite* sui = nullptr;
+	std::string auxs = lexic->symbol;
+	int auxt = lexic->type;
+	/*if(lexic->type == Token::ELIF) {
 		lexic->Next();
 		Comp_Stmt();
 		Check(":");
@@ -165,31 +348,48 @@ void Syntactic::_If_Stmt() {
 		while(lexic->type == Token::NEWLINE)
 			lexic->Next();
 		_If_Stmt();
-	} else if (lexic->type == Token::ELSE) {
+	} else*/ if (lexic->type == Token::ELSE) {
 		lexic->Next();
 		Check(":");
-		Suite();
+		sui = suite();
 		while(lexic->type == Token::NEWLINE)
 			lexic->Next();
+		node = new Else(auxt,auxs,sui);
 	}
+	return node;
 }
 
-void Syntactic::While_Stmt() {
+While* Syntactic::While_Stmt() {
+	While* node = nullptr;
+	Expression* expr = nullptr;
+	Suite* sui = nullptr;
+
+	std::string auxs = lexic->symbol;
+	int auxt = lexic->type;
 	Check(Token::WHILE);
-	Comp_Stmt();
+	expr = Comp_Stmt();
 	Check(":");
-	Suite();
+	sui = suite();
 	while(lexic->type == Token::NEWLINE)
 		lexic->Next();
+	node = new While(auxt,auxs,expr,sui);
+	return node;
 }
 
-void Syntactic::Comp_Stmt() {
-	E();
-	List_Comp();
-	Expr();
+Expression* Syntactic::Comp_Stmt() {
+	Expression* exp = nullptr;
+	Expression* comp = nullptr;
+	Expression* expr = nullptr;
+	exp = E();
+	comp = List_Comp();
+	expr = Expr();
+	comp->l = exp;
+	comp->r = expr;
+	return comp;
 }
 
-void Syntactic::List_Comp() {
+Expression* Syntactic::List_Comp() {
+	Expression* exp = new Comp(nullptr, lexic->type, lexic->symbol);
 	if (lexic->type == Token::DOUBLE_EQUAL ||
 		lexic->type == Token::NOT_EQUAL ||
 		lexic->type == Token::LESS ||
@@ -200,34 +400,63 @@ void Syntactic::List_Comp() {
 		} else {
 			Error();
 		}
+	return exp;
 }
 
-void Syntactic::Suite() {
+Suite* Syntactic::suite() {
+	Suite* node = nullptr;
+	Node* stm = nullptr;
+	Suite* suite = nullptr;
+
 	if (lexic->type == Token::NEWLINE) {
 		lexic->Next();
 		Check(Token::INDENT);
-		Stmt();
-		_Suite();
+		stm = Stmt();
+		suite = _Suite();
 		Check(Token::DEDENT);
+		node = new Suite();
+		node->nodes.push_back(stm);
+		if(suite != nullptr) {
+			for(auto a: suite->nodes)
+				node->nodes.push_back(a);
+			delete suite;
+		}
 	} else {
-		Simple_Stmt();
+		stm = Simple_Stmt();
+		node = new Suite();
+		node->nodes.push_back(stm);
 	}
+	return node;
 }
 
-void Syntactic::_Suite() {
+Suite* Syntactic::_Suite() {
+	Suite* node = nullptr;
+	Node* stm = nullptr;
+	Suite* suite = nullptr;
 	if (lexic->type != Token::DEDENT) {
-		Stmt();
-		_Suite();
+		stm = Stmt();
+		suite = _Suite();
+		node = new Suite();
+		node->nodes.push_back(stm);
+		if(suite != nullptr) {
+			for(auto a: suite->nodes)
+				node->nodes.push_back(a);
+			delete suite;
+		}
 	}
+
+	return node;
 }
 
-void Syntactic::Stmt() {
+Node* Syntactic::Stmt() {
+	Node* node = nullptr;
 	if (lexic->type == Token::IF || lexic->type == Token::WHILE) {
-		Compound_Stmt();
+		node = Compound_Stmt();
 		//Check(Token::NEWLINE); Idk if Franco knows that
 	} else {
-		Simple_Stmt();
+		node = Simple_Stmt();
 	}
+	return node;
 }
 
 void Syntactic::Check(std::string c) {
@@ -248,7 +477,6 @@ void Syntactic::Check(int c) {
 
 void Syntactic::Error() {
 	std::ofstream outFile(outFileName, std::ios_base::out);
-
     outFile << 0;
     outFile.close();
     exit(0);
