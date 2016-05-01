@@ -16,6 +16,7 @@ public:
 	Node() { };
 	virtual ~Node () { };
 	virtual void print(std::ofstream &of);
+	virtual int semanticAnalysis() { return 0; };
 };
 
 class Suite: public Node {
@@ -26,6 +27,7 @@ public:
 	Suite() { };
 	virtual ~Suite() { };
 	void print(std::ofstream &of);
+	int semanticAnalysis();
 };
 
 class Expression: public Node {
@@ -33,9 +35,11 @@ private:
 
 public:
 	Expression *r, *l;
+	char dataType;
 	Expression(int i, std::string s);
 	virtual ~Expression () { };
 	void print(std::ofstream &of);
+	int semanticAnalysis();
 };
 
 class Assign: public Expression {
@@ -45,6 +49,7 @@ public:
 	Assign (Expression* rv, int i, std::string s);
 	virtual ~Assign () { };
 	void print(std::ofstream &of);
+	int semanticAnalysis();
 };
 
 class ID: public Expression {
@@ -54,6 +59,7 @@ public:
 	ID (int i, std::string s): Expression(i, s) { };
 	virtual ~ID () { };
 	void print(std::ofstream &of);
+	int semanticAnalysis();
 };
 
 class Value: public Expression {
@@ -63,6 +69,7 @@ public:
 	Value (int i, std::string s): Expression(i, s) { };
 	virtual ~Value () { };
 	void print(std::ofstream &of);
+	int semanticAnalysis();
 };
 
 class Add: public Expression {
@@ -72,6 +79,7 @@ public:
 	Add (Expression* rv, int i, std::string s);
 	virtual ~Add () { };
 	void print(std::ofstream &of);
+	int semanticAnalysis();
 };
 
 class Mul: public Expression {
@@ -81,6 +89,7 @@ public:
 	Mul (Expression* rv, int i, std::string s);
 	virtual ~Mul () { };
 	void print(std::ofstream &of);
+	int semanticAnalysis();
 };
 
 class Comp: public Expression {
@@ -90,6 +99,7 @@ public:
 	Comp (Expression* rv, int i, std::string s);
 	virtual ~Comp () { };
 	void print(std::ofstream &of);
+	int semanticAnalysis();
 };
 
 class Unary: public Expression {
@@ -99,6 +109,7 @@ public:
 	Unary (Expression* rv, int i, std::string s);
 	virtual ~Unary () { };
 	void print(std::ofstream &of);
+	int semanticAnalysis();
 };
 
 class Else: public Node {
@@ -109,6 +120,7 @@ public:
 	Else(int i, std::string s, Suite* su);
 	virtual ~Else() { };
 	void print(std::ofstream &of);
+	int semanticAnalysis();
 };
 
 class If: public Node {
@@ -122,6 +134,7 @@ public:
 	If (int i, std::string s, Expression* ex, Suite* su, Else* els);
 	virtual ~If () { };
 	void print(std::ofstream &of);
+	int semanticAnalysis();
 };
 
 class While: public Node {
@@ -133,6 +146,7 @@ public:
 	While (int i, std::string s, Expression* ex, Suite* su);
 	virtual ~While () { };
 	void print(std::ofstream &of);
+	int semanticAnalysis();
 };
 
 class Program: public Node{
@@ -143,6 +157,7 @@ public:
 	Program() { };
 	virtual ~Program() { };
 	void print(std::ofstream &of);
+	int semanticAnalysis();
 };
 
 class Print: public Node{
@@ -153,6 +168,7 @@ public:
 	Print() { expr = nullptr; };
 	virtual ~Print() { };
 	void print(std::ofstream &of);
+	int semanticAnalysis();
 };
 
 #endif

@@ -10,7 +10,7 @@ int main(int argc, char const *argv[]) {
     }
     Syntactic *syntactic = new Syntactic(filename);
     std::ofstream outFile(outFileName, std::ios_base::out);
-    syntactic->tree->print(outFile);
+    outFile << syntactic->tree->semanticAnalysis() << std::endl;
     outFile.close();
     return 0;
 }
