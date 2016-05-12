@@ -5,8 +5,21 @@
 
 std::map<std::string, int> symbolTable;
 
+int Node::eend = 0;
+int Node::ttrue = 0;
+int Node::wwhile = 0;
+int Node::bbgin = 0;
+int Node::iif = 0;
+int Node::eelse = 0;
+
 void Node::print(std::ofstream &of) {
 	of << "FATAL ERROR NODE" << std::endl;
+	of.close();
+	exit(1);
+}
+
+void Node::code(std::ofstream &of) {
+	of << "ERRRRRRRRRROOOOOOOOOOOR" << std::endl;
 	of.close();
 	exit(1);
 }
@@ -25,6 +38,12 @@ void Expression::print(std::ofstream &of) {
 
 int Expression::semanticAnalysis() {
 	return 0;
+}
+
+void Expression::code(std::ofstream &of) {
+	of << "ERRRRRRRRRROOOOOOOOOOOR" << std::endl;
+	of.close();
+	exit(1);
 }
 
 Assign::Assign(Expression* rv, int i, std::string s): Expression(i,s) {
@@ -55,6 +74,14 @@ int Assign::semanticAnalysis() {
 	return val;
 }
 
+void Assign::code(std::ofstream &of) {
+	//if (this->l != nullptr)
+		//this->l->code(of);
+	if (this->r != nullptr)
+		this->r->code(of);
+	of << "pop eax\nmov " << this->l->symbol << ", eax\n";
+}
+
 void ID::print(std::ofstream &of) {
 	of << "<ID>" << this->symbol << "</ID>\n";
 }
@@ -77,8 +104,12 @@ int ID::semanticAnalysis() {
 		this->dataType = 'e';
 		val = 0;
 	}
-	
+
 	return val;
+}
+
+void ID::code(std::ofstream &of) {
+	of << "push " << this->symbol << "\n";
 }
 
 void Value::print(std::ofstream &of) {
@@ -95,6 +126,10 @@ int Value::semanticAnalysis() {
 		this->dataType = 'f';
 
 	return 1;
+}
+
+void Value::code(std::ofstream &of) {
+	of << "push " << this->symbol << "\n";
 }
 
 Add::Add(Expression* rv, int i, std::string s): Expression(i,s) {
@@ -128,6 +163,20 @@ int Add::semanticAnalysis() {
 	return val;
 }
 
+void Add::code(std::ofstream &of) {
+	if (this->l != nullptr)
+		this->l->code(of);
+	if (this->r != nullptr)
+		this->r->code(of);
+
+	of << "pop ebx\npop eax\n";
+	if (this->symbol == "+")
+		of << "add eax, ebx\n";
+	if (this->symbol == "-")
+		of << "sub eax, ebx\n";
+	of << "push eax\n";
+}
+
 Mul::Mul(Expression* rv, int i, std::string s): Expression(i,s) {
 	this->r = rv;
 	this->l = nullptr;
@@ -157,6 +206,20 @@ int Mul::semanticAnalysis() {
 		this->dataType = 'e';
 
 	return val;
+}
+
+void Mul::code(std::ofstream &of) {
+	if (this->l != nullptr)
+		this->l->code(of);
+	if (this->r != nullptr)
+		this->r->code(of);
+
+	of << "pop ebx\npop eax\nxor edx, edx\n";
+	if (this->symbol == "*")
+		of << "mul ebx\n";
+	if (this->symbol == "/")
+		of << "div ebx\n";
+	of << "push eax\n";
 }
 
 Comp::Comp(Expression* rv, int i, std::string s): Expression(i,s) {
@@ -198,6 +261,37 @@ int Comp::semanticAnalysis() {
 	return val;
 }
 
+void Comp::code(std::ofstream &of) {
+	std::string sym;
+	int aend = Comp::eend++;
+	int atrue = Comp::ttrue++;
+	if (this->l != nullptr)
+		this->l->code(of);
+	if (this->r != nullptr)
+		this->r->code(of);
+
+	if (this->symbol == "<")
+		sym = "jl";
+	else if (this->symbol == "<=")
+		sym = "jle";
+	else if (this->symbol == ">")
+		sym = "jg";
+	else if (this->symbol == ">=")
+		sym = "jge";
+	else if (this->symbol == "==")
+		sym = "je";
+	else if (this->symbol == "!=")
+		sym = "jne";
+
+	//of << "BEGIN" << Node::bbgin << ":\n";
+	of << "pop ebx\npop eax\ncmp eax, ebx\n";
+	of << sym << " TRUE_" << atrue << "\n";
+	of << "push 0\njmp END_" << aend << "\n";
+	of << "TRUE_" << atrue << ":\n";
+	of << "push 1\n";
+	of << "END_" << aend << ":\n";
+}
+
 Unary::Unary(Expression* rv, int i, std::string s): Expression(i,s) {
 	this->r = rv;
 	this->l = nullptr;
@@ -217,6 +311,11 @@ int Unary::semanticAnalysis() {
 	this->dataType = this->r->dataType;
 
 	return val;
+}
+
+void Unary::code(std::ofstream &of) {
+	if (this->symbol == "-")
+		of << "pop eax\nneg eax\npush eax\n";
 }
 
 If::If (int i, std::string s, Expression* ex, Suite* su, Else* els): Node(i,s) {
@@ -257,6 +356,17 @@ int If::semanticAnalysis() {
 	return val;
 }
 
+void If::code(std::ofstream &of) {
+	int aif = If::iif++;
+
+	this->expr->code(of);
+	of << "pop eax\ncmp eax, 0\nje IF_" << aif << "\n";
+	this->suite->code(of);
+	of << "IF_" << aif << ":\n";
+	if (this->Els != nullptr)
+		this->Els->code(of);
+}
+
 Else::Else(int i, std::string s, Suite* su): Node(i,s) {
 	this->suite = su;
 }
@@ -271,6 +381,10 @@ void Else::print(std::ofstream &of) {
 int Else::semanticAnalysis() {
 	int val = this->suite->semanticAnalysis();
 	return val;
+}
+
+void Else::code(std::ofstream &of) {
+	this->suite->code(of);
 }
 
 While::While(int i, std::string s, Expression* ex, Suite* su): Node(i,s) {
@@ -302,6 +416,18 @@ int While::semanticAnalysis() {
 	return val;
 }
 
+void While::code(std::ofstream &of) {
+	int awhile = While::wwhile++;
+	int abgin = While::bbgin++;
+
+	of << "jmp WHILE_" << awhile << "\n";
+	of << "BEGIN_" << abgin << ":\n";
+	this->suite->code(of);
+	of << "WHILE_" << awhile << ":\n";
+	this->expr->code(of);
+	of << "pop eax\ncmp eax, 1\nje BEGIN_" << abgin << "\n";
+}
+
 void Program::print(std::ofstream &of) {
 	of << "<PROGRAMA>\n";
 	for(auto a: this->nodes){
@@ -318,6 +444,24 @@ int Program::semanticAnalysis() {
 			break;
 	}
 	return val;
+}
+
+void Program::code(std::ofstream &of) {
+	of << ".386\n.model flat, stdcall\noption casemap:none;labels are case-sensitive now";
+	of << "\n\ninclude \\masm32\\macros\\macros.asm\ninclude \\masm32\\include\\masm32.inc\n";
+	of << "include \\masm32\\include\\kernel32.inc\n\n";
+	of << "includelib \\masm32\\lib\\masm32.lib\n";
+	of << "includelib \\masm32\\lib\\kernel32.lib\n\n";
+	of << ".data\n.data?\n";
+
+	for (auto a: symbolTable) {
+		of << a.first << " dword ?\n";
+	}
+	of << "\n.code\nmain:\n\n";
+	for (auto a: this->nodes) {
+		a->code(of);
+	}
+	of << "exit\n\nend main\n";
 }
 
 void Suite::print(std::ofstream &of) {
@@ -337,6 +481,12 @@ int Suite::semanticAnalysis() {
 	return val;
 }
 
+void Suite::code(std::ofstream &of) {
+	for (auto a: this->nodes) {
+		a->code(of);
+	}
+}
+
 void Print::print(std::ofstream &of) {
 	of << "<IMPRIME>\n";
 	if(this->expr != nullptr) {
@@ -354,4 +504,11 @@ int Print::semanticAnalysis() {
 		val = this->expr->semanticAnalysis();
 
 	return val;
+}
+
+void Print::code(std::ofstream &of) {
+	if (this->expr != nullptr)
+		this->expr->code(of);
+	of << "pop eax\n";
+	of << "print str$(eax)\nprint chr$(10)\n";
 }

@@ -106,10 +106,26 @@ void Lexic::Analyze(char* filename) {
 		}
 		if (type == Token::NEWLINE) {
 			isnewline = true;
+			lexTokens.push_back(std::pair<std::string, int>("\n",Token::NEWLINE));
 		}
 		if (type == Token::ERROR)
 			this->Error();
 		if(isnewline) {
+			if( contIndent > maxIndent ) {
+				for(int i = maxIndent; i < contIndent; i++) {
+					lexTokens.push_back(std::pair<std::string, int>("INDENT",Token::INDENT));
+				}
+			}
+			else if ( contIndent < maxIndent) {
+				for(int i = contIndent; i < maxIndent; i++)
+				lexTokens.push_back(std::pair<std::string, int>("DEDENT",Token::DEDENT));
+			}
+			else if ( contIndent == maxIndent ) {
+				//
+			} else
+			Error();
+		} else {
+			lexTokens.push_back(std::pair<std::string, int>("\n",Token::NEWLINE));
 			if( contIndent > maxIndent ) {
 				for(int i = maxIndent; i < contIndent; i++) {
 					lexTokens.push_back(std::pair<std::string, int>("INDENT",Token::INDENT));

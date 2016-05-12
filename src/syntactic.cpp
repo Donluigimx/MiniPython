@@ -444,7 +444,6 @@ Suite* Syntactic::_Suite() {
 			delete suite;
 		}
 	}
-
 	return node;
 }
 

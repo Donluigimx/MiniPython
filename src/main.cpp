@@ -10,7 +10,11 @@ int main(int argc, char const *argv[]) {
     }
     Syntactic *syntactic = new Syntactic(filename);
     std::ofstream outFile(outFileName, std::ios_base::out);
-    outFile << syntactic->tree->semanticAnalysis() << std::endl;
+    if (syntactic->tree->semanticAnalysis() == 1) {
+		syntactic->tree->code(outFile);
+	} else {
+		std::cout << "/* message */" << std::endl;
+	}
     outFile.close();
     return 0;
 }
